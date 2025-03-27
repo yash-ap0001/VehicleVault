@@ -1,0 +1,228 @@
+/* Bootstrap Custom Overrides */
+
+/* Button styles */
+.btn {
+  border-radius: 4px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+
+.btn-outline-primary {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+/* Forms */
+.form-control {
+  border-radius: 4px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--medium-gray);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.form-select {
+  border-radius: 4px;
+  padding: 0.625rem 2.25rem 0.625rem 0.75rem;
+  border: 1px solid var(--medium-gray);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+/* Card styles */
+.card {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: var(--box-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+/* Badge styles */
+.badge {
+  padding: 0.5em 0.75em;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background-color: var(--accent-color);
+  color: var(--white);
+}
+
+.badge-secondary {
+  background-color: var(--secondary-color);
+  color: var(--white);
+}
+
+/* Alert styles */
+.alert {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 2rem;
+}
+
+.page-link {
+  color: var(--accent-color);
+  padding: 0.5rem 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.page-link:hover {
+  background-color: #eaf2f8;
+  color: #2980b9;
+}
+
+.page-item.active .page-link {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+/* Modal styles */
+.modal-content {
+  border: none;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-bottom: none;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-footer {
+  border-top: none;
+}
+
+/* List groups */
+.list-group-item {
+  border: 1px solid var(--light-gray);
+  padding: 1rem 1.25rem;
+}
+
+.list-group-item:first-child {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.list-group-item:last-child {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+/* Navs and tabs */
+.nav-tabs {
+  border-bottom: 2px solid var(--light-gray);
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: var(--dark-gray);
+  padding: 0.75rem 1.25rem;
+  margin-bottom: -2px;
+  transition: color 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  border: none;
+  color: var(--accent-color);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--accent-color);
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent-color);
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item {
+  color: var(--dark-gray);
+}
+
+.breadcrumb-item a {
+  color: var(--accent-color);
+}
+
+.breadcrumb-item.active {
+  color: var(--primary-color);
+}

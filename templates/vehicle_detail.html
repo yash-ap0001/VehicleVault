@@ -1,0 +1,215 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ vehicle.brand }} {{ vehicle.model }} {{ vehicle.year }} - Car&Bike{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('search') }}">Vehicles</a></li>
+            <li class="breadcrumb-item active">{{ vehicle.brand }} {{ vehicle.model }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Vehicle Images and Basic Info -->
+        <div class="col-lg-8 mb-4">
+            <!-- Main Image -->
+            <div class="vehicle-detail-image mb-3">
+                {% if vehicle.primary_image %}
+                <img id="main-vehicle-image" src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                {% else %}
+                <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
+                    <i class="fas fa-{% if vehicle.type.name == 'BIKE' %}motorcycle{% else %}car{% endif %} fa-5x text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Image Thumbnails -->
+            {% if vehicle.images and vehicle.images|length > 1 %}
+            <div class="vehicle-thumbnails d-flex mb-4 gap-2 overflow-auto">
+                {% for image in vehicle.images %}
+                <div class="vehicle-thumbnail {% if loop.first %}active{% endif %}" data-src="{{ url_for('static', filename='uploads/' + image.filename) }}">
+                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }} - Image {{ loop.index }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Vehicle Details -->
+            <div class="vehicle-detail-info mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h1 class="vehicle-detail-title">{{ vehicle.brand }} {{ vehicle.model }} {% if vehicle.variant %}{{ vehicle.variant }}{% endif %}</h1>
+                        <p class="text-muted mb-0">{{ vehicle.year }} Model | {{ vehicle.fuel_type.value }}</p>
+                    </div>
+                    <div class="vehicle-detail-price">{{ vehicle.formatted_price }}</div>
+                </div>
+                
+                {% if vehicle.is_sold %}
+                <div class="alert alert-danger mb-3">
+                    <i class="fas fa-info-circle me-2"></i> This vehicle has been sold
+                </div>
+                {% endif %}
+                
+                <h5 class="mb-3">Specifications</h5>
+                <div class="vehicle-detail-specs mb-4">
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Vehicle Type</span>
+                        <span class="spec-value">{{ vehicle.type.value }}</span>
+                    </div>
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Brand</span>
+                        <span class="spec-value">{{ vehicle.brand }}</span>
+                    </div>
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Model</span>
+                        <span class="spec-value">{{ vehicle.model }}</span>
+                    </div>
+                    {% if vehicle.variant %}
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Variant</span>
+                        <span class="spec-value">{{ vehicle.variant }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Year</span>
+                        <span class="spec-value">{{ vehicle.year }}</span>
+                    </div>
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Fuel Type</span>
+                        <span class="spec-value">{{ vehicle.fuel_type.value }}</span>
+                    </div>
+                    {% if vehicle.transmission %}
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Transmission</span>
+                        <span class="spec-value">{{ vehicle.transmission }}</span>
+                    </div>
+                    {% endif %}
+                    {% if vehicle.mileage %}
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Mileage</span>
+                        <span class="spec-value">{{ vehicle.mileage }} km</span>
+                    </div>
+                    {% endif %}
+                    {% if vehicle.color %}
+                    <div class="vehicle-detail-spec">
+                        <span class="spec-name">Color</span>
+                        <span class="spec-value">{{ vehicle.color }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if vehicle.features %}
+                <h5 class="mb-3">Features</h5>
+                <div class="mb-4">
+                    <div class="row g-2">
+                        {% for feature in vehicle.features.split('\n') %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>{{ feature }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if vehicle.description %}
+            <div class="vehicle-detail-description">
+                <h5 class="mb-3">Description</h5>
+                <div>
+                    {{ vehicle.description|nl2br }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar with contact info and similar vehicles -->
+        <div class="col-lg-4">
+            <!-- Dealer Info Card -->
+            <div class="dealer-info mb-4">
+                <h5 class="mb-3">Contact Dealer</h5>
+                <h6>{{ vehicle.dealer.business_name }}</h6>
+                <p class="mb-2">
+                    <i class="fas fa-map-marker-alt me-2"></i> {{ vehicle.dealer.address }}
+                </p>
+                <p class="mb-2">
+                    <i class="fas fa-phone me-2"></i> {{ vehicle.dealer.phone }}
+                </p>
+                <p class="mb-4">
+                    <i class="fas fa-envelope me-2"></i> {{ vehicle.dealer.email }}
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="tel:{{ vehicle.dealer.phone }}" class="btn btn-primary">
+                        <i class="fas fa-phone me-2"></i> Call Dealer
+                    </a>
+                    <a href="mailto:{{ vehicle.dealer.email }}?subject=Inquiry about {{ vehicle.brand }} {{ vehicle.model }}" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope me-2"></i> Email Dealer
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Similar Vehicles Card -->
+            {% if similar_vehicles %}
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Similar Vehicles</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for similar in similar_vehicles %}
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3" style="width: 80px; height: 60px;">
+                                    {% if similar.primary_image %}
+                                    <img src="{{ url_for('static', filename='uploads/' + similar.primary_image.filename) }}" alt="{{ similar.brand }} {{ similar.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                    <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100 bg-light">
+                                        <i class="fas fa-car text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ similar.brand }} {{ similar.model }}</h6>
+                                    <div class="small text-muted">{{ similar.year }} | {{ similar.fuel_type.value }}</div>
+                                    <div class="fw-bold text-secondary">{{ similar.formatted_price }}</div>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('vehicle_detail', vehicle_id=similar.id) }}" class="stretched-link"></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image thumbnail functionality
+        const mainImage = document.getElementById('main-vehicle-image');
+        const thumbnails = document.querySelectorAll('.vehicle-thumbnail');
+        
+        if (mainImage && thumbnails.length > 0) {
+            thumbnails.forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    // Update main image src
+                    mainImage.src = this.dataset.src;
+                    
+                    // Update active thumbnail
+                    thumbnails.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

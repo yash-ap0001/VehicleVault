@@ -1,0 +1,320 @@
+{% extends 'layout.html' %}
+
+{% block title %}Car&Bike - Find Your Perfect Vehicle{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1>Find Your Perfect Vehicle</h1>
+                <p>Discover a wide range of cars and bikes from trusted dealers across India.</p>
+                <a href="{{ url_for('search') }}" class="btn btn-secondary btn-lg">Search Vehicles</a>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <!-- Hero image would go here, using CSS background instead -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Search Section -->
+<section class="container">
+    <div class="search-form">
+        <form action="{{ url_for('search') }}" method="get" id="quickSearchForm">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="vehicle_type" class="form-label">Vehicle Type</label>
+                    <select name="vehicle_type" id="vehicle_type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for type in vehicle_types %}
+                        <option value="{{ type.name }}">{{ type.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="brand" class="form-label">Brand</label>
+                    <select name="brand" id="brand" class="form-select">
+                        <option value="">All Brands</option>
+                        {% for brand in brands %}
+                        <option value="{{ brand }}">{{ brand }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="fuel_type" class="form-label">Fuel Type</label>
+                    <select name="fuel_type" id="fuel_type" class="form-select">
+                        <option value="">All Fuel Types</option>
+                        {% for fuel in fuel_types %}
+                        <option value="{{ fuel.name }}">{{ fuel.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="budget" class="form-label">Budget</label>
+                    <select name="budget" id="budget" class="form-select">
+                        <option value="">Any Budget</option>
+                        <option value="under5">Under 5 Lakh</option>
+                        <option value="5to10">5 - 10 Lakh</option>
+                        <option value="10to20">10 - 20 Lakh</option>
+                        <option value="20to50">20 - 50 Lakh</option>
+                        <option value="above50">Above 50 Lakh</option>
+                    </select>
+                </div>
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2">Search Vehicles</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Featured Vehicles Section -->
+<section class="container featured-vehicles">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title">Newly Launched Cars</h2>
+        <a href="{{ url_for('search') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    
+    <div class="row">
+        {% for vehicle in featured_vehicles %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="vehicle-card">
+                <div class="vehicle-card-img">
+                    {% if vehicle.primary_image %}
+                    <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                    {% else %}
+                    <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
+                        <i class="fas fa-car fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="vehicle-card-body">
+                    <h5 class="vehicle-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                    <div class="vehicle-price">{{ vehicle.formatted_price }}</div>
+                    <div class="vehicle-details">
+                        <span class="vehicle-detail"><i class="fas fa-calendar-alt me-1"></i> {{ vehicle.year }}</span>
+                        <span class="vehicle-detail"><i class="fas fa-gas-pump me-1"></i> {{ vehicle.fuel_type.value }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Category Navigation -->
+<section class="container mb-5">
+    <ul class="nav nav-tabs category-tabs" id="vehicleCategories" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="popular-tab" data-bs-toggle="tab" data-bs-target="#popular" type="button" role="tab">Popular Cars</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming Launches</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="electric-tab" data-bs-toggle="tab" data-bs-target="#electric" type="button" role="tab">Electric Vehicles</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="luxury-tab" data-bs-toggle="tab" data-bs-target="#luxury" type="button" role="tab">Luxury Cars</button>
+        </li>
+    </ul>
+    
+    <div class="tab-content pt-4" id="vehicleCategoriesContent">
+        <div class="tab-pane fade show active" id="popular" role="tabpanel">
+            <div class="row">
+                {% for vehicle in latest_vehicles %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="vehicle-card">
+                        <div class="vehicle-card-img">
+                            {% if vehicle.primary_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                            {% else %}
+                            <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-car fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="vehicle-card-body">
+                            <h5 class="vehicle-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                            <div class="vehicle-price">{{ vehicle.formatted_price }}</div>
+                            <div class="vehicle-details">
+                                <span class="vehicle-detail"><i class="fas fa-calendar-alt me-1"></i> {{ vehicle.year }}</span>
+                                <span class="vehicle-detail"><i class="fas fa-gas-pump me-1"></i> {{ vehicle.fuel_type.value }}</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="upcoming" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Stay tuned for upcoming vehicle launches.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="electric" role="tabpanel">
+            <div class="row">
+                {% for vehicle in latest_vehicles if vehicle.fuel_type.name == 'ELECTRIC' %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="vehicle-card">
+                        <div class="vehicle-card-img">
+                            {% if vehicle.primary_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                            {% else %}
+                            <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-car fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="vehicle-card-body">
+                            <h5 class="vehicle-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                            <div class="vehicle-price">{{ vehicle.formatted_price }}</div>
+                            <div class="vehicle-details">
+                                <span class="vehicle-detail"><i class="fas fa-calendar-alt me-1"></i> {{ vehicle.year }}</span>
+                                <span class="vehicle-detail"><i class="fas fa-battery-full me-1"></i> Electric</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No electric vehicles found at the moment.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="luxury" role="tabpanel">
+            <div class="row">
+                {% for vehicle in latest_vehicles if vehicle.price >= 5000000 %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="vehicle-card">
+                        <div class="vehicle-card-img">
+                            {% if vehicle.primary_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                            {% else %}
+                            <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-car fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="vehicle-card-body">
+                            <h5 class="vehicle-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                            <div class="vehicle-price">{{ vehicle.formatted_price }}</div>
+                            <div class="vehicle-details">
+                                <span class="vehicle-detail"><i class="fas fa-calendar-alt me-1"></i> {{ vehicle.year }}</span>
+                                <span class="vehicle-detail"><i class="fas fa-gas-pump me-1"></i> {{ vehicle.fuel_type.value }}</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No luxury vehicles found at the moment.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Browse by Brand -->
+<section class="container mb-5">
+    <h2 class="section-title">Browse by Brand</h2>
+    <div class="row mt-4">
+        {% for brand in brands[:8] %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+            <a href="{{ url_for('search') }}?brand={{ brand }}" class="card text-center h-100 text-decoration-none">
+                <div class="card-body">
+                    <i class="fas fa-car-side fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">{{ brand }}</h5>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Latest News Section -->
+<section class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title">Latest News</h2>
+        <a href="#" class="btn btn-sm btn-outline-primary">View All News</a>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">New Electric Vehicle Policies Announced</h5>
+                    <p class="card-text text-muted">The government has announced new policies to boost electric vehicle adoption...</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <small class="text-muted">Posted 2 days ago</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Top 10 SUVs to Watch Out For in 2023</h5>
+                    <p class="card-text text-muted">With the growing popularity of SUVs, here are the top models...</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <small class="text-muted">Posted 5 days ago</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Fuel Prices Impact Vehicle Sales</h5>
+                    <p class="card-text text-muted">Rising fuel prices have shifted consumer preferences towards more fuel-efficient vehicles...</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <small class="text-muted">Posted 1 week ago</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2>Are You a Dealer?</h2>
+                <p class="mb-md-0">Join our platform to list your vehicles and reach thousands of potential buyers.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('dealer_register') }}" class="btn btn-light">Register Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

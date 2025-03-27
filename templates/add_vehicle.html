@@ -1,0 +1,243 @@
+{% extends 'layout.html' %}
+
+{% block title %}Add Vehicle - Car&Bike{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dealer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Add Vehicle</li>
+        </ol>
+    </nav>
+    
+    <div class="form-container">
+        <h2 class="form-title mb-4">Add New Vehicle</h2>
+        
+        <form method="post" action="{{ url_for('add_vehicle') }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="type" class="form-label">Vehicle Type <span class="text-danger">*</span></label>
+                            {{ form.type(class="form-select", id="type") }}
+                            {% if form.type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="brand" class="form-label">Brand <span class="text-danger">*</span></label>
+                            {{ form.brand(class="form-control", id="brand", placeholder="e.g. Toyota, Honda, BMW") }}
+                            {% if form.brand.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.brand.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
+                            {{ form.model(class="form-control", id="model", placeholder="e.g. Corolla, Civic, X5") }}
+                            {% if form.model.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.model.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="variant" class="form-label">Variant</label>
+                            {{ form.variant(class="form-control", id="variant", placeholder="e.g. LE, Sport, xDrive") }}
+                            {% if form.variant.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.variant.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
+                            {{ form.year(class="form-control", id="year", type="number", min="1900", max="2030") }}
+                            {% if form.year.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.year.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="fuel_type" class="form-label">Fuel Type <span class="text-danger">*</span></label>
+                            {{ form.fuel_type(class="form-select", id="fuel_type") }}
+                            {% if form.fuel_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.fuel_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            {{ form.color(class="form-control", id="color", placeholder="e.g. Red, Blue, Silver") }}
+                            {% if form.color.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.color.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Additional Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="transmission" class="form-label">Transmission</label>
+                            {{ form.transmission(class="form-control", id="transmission", placeholder="e.g. Automatic, Manual") }}
+                            {% if form.transmission.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.transmission.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="mileage" class="form-label">Mileage (km)</label>
+                            {{ form.mileage(class="form-control", id="mileage", type="number", min="0", step="0.01", placeholder="e.g. 15000") }}
+                            {% if form.mileage.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.mileage.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                        {{ form.price(class="form-control", id="price", type="number", min="0", step="0.01", placeholder="e.g. 1500000") }}
+                        {% if form.price.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Enter price in Indian Rupees. Example: For 15 Lakh, enter 1500000</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control", id="description", rows="5", placeholder="Detailed description of the vehicle...") }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="features" class="form-label">Features</label>
+                        {{ form.features(class="form-control", id="features", rows="3", placeholder="List of features, one per line...") }}
+                        {% if form.features.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.features.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Enter each feature on a new line. Example: Air Conditioning, Power Steering, etc.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Images -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Vehicle Images</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Upload Images</label>
+                        {{ form.images(class="form-control", id="images", accept="image/jpeg,image/png,image/webp") }}
+                        {% if form.images.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.images.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">You can select multiple images. The first image will be used as the primary image.</div>
+                    </div>
+                    
+                    <div id="image-preview-container" class="image-preview-container">
+                        <!-- Image previews will be displayed here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        {{ form.is_featured(class="form-check-input", id="is_featured") }}
+                        <label class="form-check-label" for="is_featured">
+                            Feature this vehicle on the homepage
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.is_sold(class="form-check-input", id="is_sold") }}
+                        <label class="form-check-label" for="is_sold">
+                            Mark this vehicle as sold
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('dealer_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/image-preview.js') }}"></script>
+{% endblock %}

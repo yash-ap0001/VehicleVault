@@ -1,0 +1,331 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dealer Dashboard - Car&Bike{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vehicle-sold {
+        opacity: 0.7;
+    }
+    
+    .vehicle-item {
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-stats .stat-card {
+        border-left: 4px solid var(--accent-color);
+    }
+    
+    .dashboard-stats .stat-card:nth-child(2) {
+        border-left-color: var(--secondary-color);
+    }
+    
+    .dashboard-stats .stat-card:nth-child(3) {
+        border-left-color: #28a745;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .action-btns .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .dashboard-filter-btn.active {
+        background-color: var(--accent-color);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Dealer Dashboard</h2>
+        <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Add New Vehicle
+        </a>
+    </div>
+    
+    <!-- Dashboard Stats -->
+    <div class="dashboard-stats">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Total Vehicles</h5>
+                        <div class="stat-value">{{ total_vehicles }}</div>
+                        <div class="stat-label">Vehicles in inventory</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Active Listings</h5>
+                        <div class="stat-value">{{ active_listings }}</div>
+                        <div class="stat-label">Available for sale</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Sold Vehicles</h5>
+                        <div class="stat-value">{{ sold_vehicles }}</div>
+                        <div class="stat-label">Completed sales</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart and Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Inventory Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="vehicle-stats-chart" data-active="{{ active_listings }}" data-sold="{{ sold_vehicles }}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('add_vehicle') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i> Add New Vehicle
+                        </a>
+                        <button class="btn btn-outline-primary dashboard-filter-btn active" data-filter="all">
+                            <i class="fas fa-list me-2"></i> View All Vehicles
+                        </button>
+                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="active">
+                            <i class="fas fa-car me-2"></i> View Active Listings
+                        </button>
+                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="sold">
+                            <i class="fas fa-check-circle me-2"></i> View Sold Vehicles
+                        </button>
+                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="featured">
+                            <i class="fas fa-star me-2"></i> View Featured Vehicles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vehicle Management -->
+    <div class="vehicle-management">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Manage Vehicles</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if vehicles %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr class="vehicle-item {% if vehicle.is_sold %}vehicle-sold{% endif %} {% if vehicle.is_featured %}vehicle-featured{% endif %}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="vehicle-img me-3" style="width: 60px; height: 45px;">
+                                            {% if vehicle.primary_image %}
+                                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% else %}
+                                            <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100 bg-light">
+                                                <i class="fas fa-car text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <strong>{{ vehicle.brand }} {{ vehicle.model }}</strong>
+                                            <div class="small text-muted">{{ vehicle.year }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ vehicle.type.value }}</td>
+                                <td>{{ vehicle.formatted_price }}</td>
+                                <td>
+                                    <span class="badge {% if vehicle.is_sold %}bg-secondary{% else %}bg-success{% endif %}">
+                                        {% if vehicle.is_sold %}Sold{% else %}Available{% endif %}
+                                    </span>
+                                    {% if vehicle.is_featured %}
+                                    <span class="badge bg-warning text-dark ms-1">Featured</span>
+                                    {% endif %}
+                                </td>
+                                <td class="action-btns">
+                                    <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-vehicle-btn" 
+                                            data-vehicle-id="{{ vehicle.id }}" 
+                                            data-vehicle-name="{{ vehicle.brand }} {{ vehicle.model }}" 
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i> You haven't added any vehicles yet. 
+                    <a href="{{ url_for('add_vehicle') }}">Add your first vehicle</a> to get started.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <span id="vehicleToDelete" class="fw-bold"></span>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteVehicleForm" method="post" action="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for status updates -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="statusToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Status Update</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Vehicle status updated successfully
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dealer-dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize confirmation modals for delete buttons
+        const deleteButtons = document.querySelectorAll('.delete-vehicle-btn');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const vehicleId = this.dataset.vehicleId;
+                const vehicleName = this.dataset.vehicleName;
+                
+                const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                document.getElementById('vehicleToDelete').textContent = vehicleName;
+                
+                const deleteForm = document.getElementById('deleteVehicleForm');
+                deleteForm.action = `/dealer/vehicle/delete/${vehicleId}`;
+                
+                modal.show();
+            });
+        });
+
+        // Simple chart for dashboard stats
+        const statsCanvas = document.getElementById('vehicle-stats-chart');
+        
+        if (statsCanvas) {
+            const ctx = statsCanvas.getContext('2d');
+            
+            // Get data from data attributes
+            const activeListings = parseInt(statsCanvas.dataset.active) || 0;
+            const soldVehicles = parseInt(statsCanvas.dataset.sold) || 0;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active Listings', 'Sold Vehicles'],
+                    datasets: [{
+                        data: [activeListings, soldVehicles],
+                        backgroundColor: [
+                            '#3498DB',
+                            '#E74C3C'
+                        ],
+                        borderColor: [
+                            '#2980B9',
+                            '#C0392B'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Quick filters
+        const filterButtons = document.querySelectorAll('.dashboard-filter-btn');
+        const vehicleItems = document.querySelectorAll('.vehicle-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                vehicleItems.forEach(item => {
+                    if (filter === 'all') {
+                        item.style.display = '';
+                    } else if (filter === 'active' && !item.classList.contains('vehicle-sold')) {
+                        item.style.display = '';
+                    } else if (filter === 'sold' && item.classList.contains('vehicle-sold')) {
+                        item.style.display = '';
+                    } else if (filter === 'featured' && item.classList.contains('vehicle-featured')) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

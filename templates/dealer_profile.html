@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dealer Profile - NDMotors{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Dealer Profile</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Business Information</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Business Name</label>
+                        <p class="form-control-static">{{ dealer.business_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <p class="form-control-static">{{ dealer.address }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <p class="form-control-static">{{ dealer.phone }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <p class="form-control-static">{{ dealer.email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Account Information</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <p class="form-control-static">{{ dealer.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Member Since</label>
+                        <p class="form-control-static">{{ dealer.created_at.strftime('%B %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dealer_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('add_vehicle') }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i> Add Vehicle
+                        </a>
+                        <a href="{{ url_for('dealer_logout') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

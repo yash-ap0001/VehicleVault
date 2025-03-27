@@ -1,5 +1,6 @@
 import os
 import logging
+from urllib.parse import urlparse
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +9,8 @@ from flask_login import LoginManager
 from werkzeug.utils import secure_filename
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Setup database base class
 class Base(DeclarativeBase):
@@ -22,7 +24,10 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
 # Configure SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///vehicles.db")
+database_url = os.environ.get("DATABASE_URL", "sqlite:///vehicles.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -30,12 +35,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure file uploads
-app.config["UPLOAD_FOLDER"] = os.path.join("static", "uploads")
+app.config["UPLOAD_FOLDER"] = "/tmp/uploads"  # Use /tmp for serverless
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload
 app.config["ALLOWED_EXTENSIONS"] = {"jpg", "jpeg", "png", "webp"}
 
 # Ensure upload directory exists
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+try:
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    logger.info(f"Created upload directory: {app.config['UPLOAD_FOLDER']}")
+except Exception as e:
+    logger.error(f"Error creating upload directory: {str(e)}")
 
 # Initialize extensions
 db.init_app(app)
@@ -47,24 +56,29 @@ login_manager.login_message_category = "warning"
 
 # Register models and routes within app context
 with app.app_context():
-    # Import models and routes here to avoid circular imports
-    from models import Dealer, Vehicle, VehicleImage  # noqa: F401
-    import routes  # noqa: F401
-    
-    # Create database tables
-    db.create_all()
-    
-    # Add test dealer if none exists
-    if not Dealer.query.first():
-        from werkzeug.security import generate_password_hash
-        test_dealer = Dealer(
-            username="testdealer",
-            email="test@example.com",
-            password_hash=generate_password_hash("password"),
-            business_name="Test Dealership",
-            address="123 Demo Street",
-            phone="555-123-4567"
-        )
-        db.session.add(test_dealer)
-        db.session.commit()
-        app.logger.info("Created test dealer account")
+    try:
+        # Import models and routes here to avoid circular imports
+        from models import Dealer, Vehicle, VehicleImage  # noqa: F401
+        import routes  # noqa: F401
+        
+        # Create database tables
+        db.create_all()
+        logger.info("Database tables created successfully")
+        
+        # Add test dealer if none exists
+        if not Dealer.query.first():
+            from werkzeug.security import generate_password_hash
+            test_dealer = Dealer(
+                username="testdealer",
+                email="test@example.com",
+                password_hash=generate_password_hash("password"),
+                business_name="Test Dealership",
+                address="123 Demo Street",
+                phone="555-123-4567"
+            )
+            db.session.add(test_dealer)
+            db.session.commit()
+            logger.info("Created test dealer account")
+    except Exception as e:
+        logger.error(f"Error during app initialization: {str(e)}")
+        raise

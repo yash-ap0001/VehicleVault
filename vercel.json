@@ -1,5 +1,6 @@
 {
     "version": 2,
+    "framework": "flask",
     "builds": [
         {
             "src": "main.py",

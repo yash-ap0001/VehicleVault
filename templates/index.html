@@ -9,7 +9,7 @@
         <div class="row align-items-center">
             <div class="col-lg-6 hero-content">
                 <h1>Find Your Perfect Vehicle</h1>
-                <p>Discover a wide range of cars and bikes from trusted dealers across India.</p>
+                <p>Discover a wide range of cars and bikes from trusted dealers across the United States.</p>
                 <a href="{{ url_for('search') }}" class="btn btn-secondary btn-lg">Search Vehicles</a>
             </div>
             <div class="col-lg-6 d-none d-lg-block">
@@ -55,11 +55,11 @@
                     <label for="budget" class="form-label">Budget</label>
                     <select name="budget" id="budget" class="form-select">
                         <option value="">Any Budget</option>
-                        <option value="under5">Under 5 Lakh</option>
-                        <option value="5to10">5 - 10 Lakh</option>
-                        <option value="10to20">10 - 20 Lakh</option>
-                        <option value="20to50">20 - 50 Lakh</option>
-                        <option value="above50">Above 50 Lakh</option>
+                        <option value="under10k">Under $10,000</option>
+                        <option value="10kto20k">$10,000 - $20,000</option>
+                        <option value="20kto30k">$20,000 - $30,000</option>
+                        <option value="30kto50k">$30,000 - $50,000</option>
+                        <option value="above50k">Above $50,000</option>
                     </select>
                 </div>
                 <div class="col-12 text-center">
@@ -205,7 +205,7 @@
         
         <div class="tab-pane fade" id="luxury" role="tabpanel">
             <div class="row">
-                {% for vehicle in latest_vehicles if vehicle.price >= 5000000 %}
+                {% for vehicle in latest_vehicles if vehicle.price >= 50000 %}
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <div class="vehicle-card">
                         <div class="vehicle-card-img">
@@ -270,8 +270,8 @@
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">New Electric Vehicle Policies Announced</h5>
-                    <p class="card-text text-muted">The government has announced new policies to boost electric vehicle adoption...</p>
+                    <h5 class="card-title">New US Electric Vehicle Tax Credits Announced</h5>
+                    <p class="card-text text-muted">The US government has announced new tax incentives to boost electric vehicle adoption...</p>
                 </div>
                 <div class="card-footer bg-white border-0">
                     <small class="text-muted">Posted 2 days ago</small>

@@ -97,12 +97,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (priceRange && minPriceDisplay && maxPriceDisplay && minPriceInput && maxPriceInput) {
         noUiSlider.create(priceRange, {
-            start: [0, 5000000],
+            start: [0, 50000],
             connect: true,
-            step: 50000,
+            step: 1000,
             range: {
                 'min': 0,
-                'max': 10000000
+                'max': 100000
             },
             format: {
                 to: function(value) {
@@ -130,12 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Format price helper function
     function formatPrice(price) {
         price = parseInt(price);
-        if (price >= 10000000) {
-            return '₹ ' + (price / 10000000).toFixed(2) + ' Cr';
-        } else if (price >= 100000) {
-            return '₹ ' + (price / 100000).toFixed(2) + ' Lakh';
+        if (price >= 1000000) {
+            return '$' + (price / 1000000).toFixed(2) + ' Million';
         } else {
-            return '₹ ' + price.toLocaleString('en-IN');
+            return '$' + price.toLocaleString('en-US');
         }
     }
 

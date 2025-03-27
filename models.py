@@ -77,13 +77,11 @@ class Vehicle(db.Model):
     
     @property
     def formatted_price(self):
-        """Format price in lakhs or crores based on value"""
-        if self.price >= 10000000:  # 1 crore = 10,000,000
-            return f"₹ {self.price/10000000:.2f} Crore"
-        elif self.price >= 100000:  # 1 lakh = 100,000
-            return f"₹ {self.price/100000:.2f} Lakh"
+        """Format price in USD based on value"""
+        if self.price >= 1000000:  # $1 million+
+            return f"${self.price/1000000:.2f} Million"
         else:
-            return f"₹ {self.price:,.2f}"
+            return f"${self.price:,.2f}"
 
 class VehicleImage(db.Model):
     __tablename__ = 'vehicle_images'

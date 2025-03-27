@@ -53,23 +53,18 @@ def get_models_for_brand(brand):
     return [model[0] for model in models]
 
 def format_price_for_display(price):
-    """Format price in lakhs or crores for display"""
-    if price >= 10000000:  # 1 crore = 10,000,000
-        return f"₹ {price/10000000:.2f} Crore"
-    elif price >= 100000:  # 1 lakh = 100,000
-        return f"₹ {price/100000:.2f} Lakh"
+    """Format price in USD for display"""
+    if price >= 1000000:  # $1 million+
+        return f"${price/1000000:.2f} Million"
     else:
-        return f"₹ {price:,.2f}"
+        return f"${price:,.2f}"
 
 def parse_price_input(price_str):
-    """Convert a price string (with lakh/crore) to a float value"""
+    """Convert a price string in USD to a float value"""
     price_str = price_str.strip()
     
-    if "crore" in price_str.lower():
-        value = float(price_str.lower().replace("crore", "").replace("₹", "").strip())
-        return value * 10000000
-    elif "lakh" in price_str.lower():
-        value = float(price_str.lower().replace("lakh", "").replace("₹", "").strip())
-        return value * 100000
+    if "million" in price_str.lower():
+        value = float(price_str.lower().replace("million", "").replace("$", "").strip())
+        return value * 1000000
     else:
-        return float(price_str.replace("₹", "").replace(",", "").strip())
+        return float(price_str.replace("$", "").replace(",", "").strip())

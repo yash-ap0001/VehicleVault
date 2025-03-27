@@ -7,90 +7,131 @@ from forms import DealerLoginForm, DealerRegistrationForm, VehicleForm, SearchFo
 from utils import save_image, delete_image, get_brands, get_models_for_brand
 import os
 from sqlalchemy import or_, and_
+from sqlalchemy.exc import OperationalError
+import logging
+
+logger = logging.getLogger(__name__)
+
+def handle_db_error(e):
+    """Handle database errors gracefully"""
+    logger.error(f"Database error: {str(e)}")
+    flash('We are experiencing technical difficulties. Please try again later.', 'error')
+    return None
 
 # Home page route
 @app.route('/')
 def index():
-    featured_vehicles = Vehicle.query.filter_by(is_featured=True, is_sold=False).order_by(Vehicle.created_at.desc()).limit(5).all()
-    latest_vehicles = Vehicle.query.filter_by(is_sold=False).order_by(Vehicle.created_at.desc()).limit(10).all()
-    
-    # Get unique brands for filter
-    brands = get_brands()
-    
-    return render_template('index.html', 
-                           featured_vehicles=featured_vehicles,
-                           latest_vehicles=latest_vehicles,
-                           brands=brands,
-                           fuel_types=FuelType,
-                           vehicle_types=VehicleType)
+    try:
+        featured_vehicles = Vehicle.query.filter_by(is_featured=True, is_sold=False).order_by(Vehicle.created_at.desc()).limit(5).all()
+        latest_vehicles = Vehicle.query.filter_by(is_sold=False).order_by(Vehicle.created_at.desc()).limit(10).all()
+        
+        # Get unique brands for filter
+        brands = get_brands()
+        
+        return render_template('index.html', 
+                               featured_vehicles=featured_vehicles,
+                               latest_vehicles=latest_vehicles,
+                               brands=brands,
+                               fuel_types=FuelType,
+                               vehicle_types=VehicleType)
+    except OperationalError as e:
+        return handle_db_error(e)
+    except Exception as e:
+        logger.error(f"Unexpected error in index route: {str(e)}")
+        flash('An unexpected error occurred. Please try again later.', 'error')
+        return render_template('index.html', 
+                               featured_vehicles=[],
+                               latest_vehicles=[],
+                               brands=[],
+                               fuel_types=FuelType,
+                               vehicle_types=VehicleType)
 
 # Search results route
 @app.route('/search', methods=['GET'])
 def search():
-    form = SearchForm(request.args)
-    
-    query = []
-    # By default, only show vehicles that are not sold
-    query.append(Vehicle.is_sold == False)
-    
-    if form.query.data:
-        search_term = f"%{form.query.data}%"
-        query.append(or_(
-            Vehicle.brand.ilike(search_term),
-            Vehicle.model.ilike(search_term),
-            Vehicle.variant.ilike(search_term),
-            Vehicle.description.ilike(search_term)
-        ))
-    
-    if form.vehicle_type.data:
-        query.append(Vehicle.type == form.vehicle_type.data)
-    
-    if form.brand.data:
-        query.append(Vehicle.brand == form.brand.data)
-    
-    if form.min_price.data:
-        query.append(Vehicle.price >= form.min_price.data)
-    
-    if form.max_price.data:
-        query.append(Vehicle.price <= form.max_price.data)
-    
-    if form.min_year.data:
-        query.append(Vehicle.year >= form.min_year.data)
-    
-    if form.max_year.data:
-        query.append(Vehicle.year <= form.max_year.data)
-    
-    if form.fuel_type.data:
-        query.append(Vehicle.fuel_type == form.fuel_type.data)
-    
-    if query:
-        vehicles = Vehicle.query.filter(and_(*query)).order_by(Vehicle.created_at.desc()).all()
-    else:
-        vehicles = Vehicle.query.filter_by(is_sold=False).order_by(Vehicle.created_at.desc()).all()
-    
-    # Get unique brands for filter
-    brands = get_brands()
-    
-    return render_template('search_results.html', 
-                           vehicles=vehicles, 
-                           form=form,
-                           brands=brands,
-                           fuel_types=FuelType,
-                           vehicle_types=VehicleType)
+    try:
+        form = SearchForm(request.args)
+        
+        query = []
+        # By default, only show vehicles that are not sold
+        query.append(Vehicle.is_sold == False)
+        
+        if form.query.data:
+            search_term = f"%{form.query.data}%"
+            query.append(or_(
+                Vehicle.brand.ilike(search_term),
+                Vehicle.model.ilike(search_term),
+                Vehicle.variant.ilike(search_term),
+                Vehicle.description.ilike(search_term)
+            ))
+        
+        if form.vehicle_type.data:
+            query.append(Vehicle.type == form.vehicle_type.data)
+        
+        if form.brand.data:
+            query.append(Vehicle.brand == form.brand.data)
+        
+        if form.min_price.data:
+            query.append(Vehicle.price >= form.min_price.data)
+        
+        if form.max_price.data:
+            query.append(Vehicle.price <= form.max_price.data)
+        
+        if form.min_year.data:
+            query.append(Vehicle.year >= form.min_year.data)
+        
+        if form.max_year.data:
+            query.append(Vehicle.year <= form.max_year.data)
+        
+        if form.fuel_type.data:
+            query.append(Vehicle.fuel_type == form.fuel_type.data)
+        
+        if query:
+            vehicles = Vehicle.query.filter(and_(*query)).order_by(Vehicle.created_at.desc()).all()
+        else:
+            vehicles = Vehicle.query.filter_by(is_sold=False).order_by(Vehicle.created_at.desc()).all()
+        
+        # Get unique brands for filter
+        brands = get_brands()
+        
+        return render_template('search_results.html', 
+                               vehicles=vehicles, 
+                               form=form,
+                               brands=brands,
+                               fuel_types=FuelType,
+                               vehicle_types=VehicleType)
+    except OperationalError as e:
+        return handle_db_error(e)
+    except Exception as e:
+        logger.error(f"Unexpected error in search route: {str(e)}")
+        flash('An unexpected error occurred. Please try again later.', 'error')
+        return render_template('search_results.html', 
+                               vehicles=[], 
+                               form=form,
+                               brands=[],
+                               fuel_types=FuelType,
+                               vehicle_types=VehicleType)
 
 # Vehicle detail route
 @app.route('/vehicle/<int:vehicle_id>')
 def vehicle_detail(vehicle_id):
-    vehicle = Vehicle.query.get_or_404(vehicle_id)
-    # Find similar vehicles (same brand/type, not sold)
-    similar_vehicles = Vehicle.query.filter(
-        Vehicle.id != vehicle_id,
-        Vehicle.brand == vehicle.brand,
-        Vehicle.type == vehicle.type,
-        Vehicle.is_sold == False
-    ).limit(4).all()
-    
-    return render_template('vehicle_detail.html', vehicle=vehicle, similar_vehicles=similar_vehicles)
+    try:
+        vehicle = Vehicle.query.get_or_404(vehicle_id)
+        # Find similar vehicles (same brand/type, not sold)
+        similar_vehicles = Vehicle.query.filter(
+            Vehicle.id != vehicle_id,
+            Vehicle.brand == vehicle.brand,
+            Vehicle.type == vehicle.type,
+            Vehicle.is_sold == False
+        ).limit(4).all()
+        
+        return render_template('vehicle_detail.html', vehicle=vehicle, similar_vehicles=similar_vehicles)
+    except OperationalError as e:
+        return handle_db_error(e)
+    except Exception as e:
+        logger.error(f"Unexpected error in vehicle_detail route: {str(e)}")
+        flash('An unexpected error occurred. Please try again later.', 'error')
+        return render_template('vehicle_detail.html', vehicle=None, similar_vehicles=[])
 
 # Dealer login route
 @app.route('/dealer/login', methods=['GET', 'POST'])

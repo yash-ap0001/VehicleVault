@@ -1,6 +1,7 @@
 import os
 import logging
 from urllib.parse import urlparse
+import time
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -36,7 +37,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
     "connect_args": {
-        "sslmode": "require"  # Enable SSL for Supabase
+        "sslmode": "require",  # Enable SSL for Supabase
+        "connect_timeout": 10  # Add connection timeout
     }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -61,6 +63,26 @@ login_manager.login_view = 'dealer_login'
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "warning"
 
+def init_db():
+    """Initialize database with retries"""
+    max_retries = 3
+    retry_delay = 5  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"Attempting to create database tables (attempt {attempt + 1}/{max_retries})...")
+            db.create_all()
+            logger.info("Database tables created successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error creating database tables (attempt {attempt + 1}/{max_retries}): {str(e)}")
+            if attempt < max_retries - 1:
+                logger.info(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+            else:
+                logger.error("Failed to create database tables after all retries")
+                return False
+
 # Register models and routes within app context
 with app.app_context():
     try:
@@ -68,25 +90,27 @@ with app.app_context():
         from models import Dealer, Vehicle, VehicleImage  # noqa: F401
         import routes  # noqa: F401
         
-        # Create database tables
-        logger.info("Attempting to create database tables...")
-        db.create_all()
-        logger.info("Database tables created successfully")
-        
-        # Add test dealer if none exists
-        if not Dealer.query.first():
-            from werkzeug.security import generate_password_hash
-            test_dealer = Dealer(
-                username="testdealer",
-                email="test@example.com",
-                password_hash=generate_password_hash("password"),
-                business_name="Test Dealership",
-                address="123 Demo Street",
-                phone="555-123-4567"
-            )
-            db.session.add(test_dealer)
-            db.session.commit()
-            logger.info("Created test dealer account")
+        # Initialize database with retries
+        if init_db():
+            # Add test dealer if none exists
+            try:
+                if not Dealer.query.first():
+                    from werkzeug.security import generate_password_hash
+                    test_dealer = Dealer(
+                        username="testdealer",
+                        email="test@example.com",
+                        password_hash=generate_password_hash("password"),
+                        business_name="Test Dealership",
+                        address="123 Demo Street",
+                        phone="555-123-4567"
+                    )
+                    db.session.add(test_dealer)
+                    db.session.commit()
+                    logger.info("Created test dealer account")
+            except Exception as e:
+                logger.error(f"Error creating test dealer: {str(e)}")
+        else:
+            logger.error("Skipping test dealer creation due to database initialization failure")
     except Exception as e:
         logger.error(f"Error during app initialization: {str(e)}")
         # Don't raise the exception, just log it

@@ -1,6 +1,6 @@
 import os
 import logging
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlparse, urlencode, parse_qs
 import time
 from sqlalchemy import text
 
@@ -36,13 +36,25 @@ if database_url:
     
     # Parse the URL to get connection details (without password)
     parsed_url = urlparse(database_url)
+    
+    # Clean up query parameters - only keep valid ones
+    query_params = parse_qs(parsed_url.query)
+    valid_params = {
+        'sslmode': query_params.get('sslmode', ['require'])[0]
+    }
+    
+    # Reconstruct the URL with only valid parameters
+    clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    if valid_params:
+        clean_url += f"?{urlencode(valid_params)}"
+    
     logger.info(f"Database Host: {parsed_url.hostname}")
     logger.info(f"Database Port: {parsed_url.port}")
     logger.info(f"Database Name: {parsed_url.path[1:]}")
     logger.info(f"Database User: {parsed_url.username}")
     
-    # Configure SQLAlchemy with the database URL
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    # Configure SQLAlchemy with the cleaned database URL
+    app.config["SQLALCHEMY_DATABASE_URI"] = clean_url
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
@@ -54,7 +66,7 @@ if database_url:
     
     # Test database connection
     try:
-        engine = db.create_engine(database_url)
+        engine = db.create_engine(clean_url)
         with engine.connect() as connection:
             result = connection.execute(text("SELECT version()"))
             version = result.scalar()

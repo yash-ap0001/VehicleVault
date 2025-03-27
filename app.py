@@ -1,6 +1,6 @@
 import os
 import logging
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 import time
 from sqlalchemy import text
 
@@ -30,16 +30,20 @@ database_url = os.environ.get("DATABASE_URL")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
 if database_url:
-    # Ensure we're using the connection pooler
-    if not database_url.endswith("?pgbouncer=true"):
-        database_url += "?pgbouncer=true"
-    
     # Parse the URL to get connection details (without password)
     parsed_url = urlparse(database_url)
     logger.info(f"Database Host: {parsed_url.hostname}")
     logger.info(f"Database Port: {parsed_url.port}")
     logger.info(f"Database Name: {parsed_url.path[1:]}")
     logger.info(f"Database User: {parsed_url.username}")
+    
+    # Add pgbouncer parameter properly
+    query_params = {"pgbouncer": "true"}
+    if parsed_url.query:
+        query_params.update(dict(pair.split('=') for pair in parsed_url.query.split('&')))
+    
+    # Reconstruct the URL with pgbouncer
+    database_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{urlencode(query_params)}"
     
     # Configure SQLAlchemy with the database URL
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url

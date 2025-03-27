@@ -123,7 +123,7 @@
                     <div class="vehicle-card">
                         <div class="vehicle-card-img">
                             {% if vehicle.primary_image %}
-                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                            <img src="{{ get_image_url(vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
                             {% else %}
                             <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
                                 <i class="fas fa-{% if vehicle.type.name == 'BIKE' %}motorcycle{% else %}car{% endif %} fa-3x text-muted"></i>

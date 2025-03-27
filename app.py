@@ -54,6 +54,8 @@ def get_image_url(filename):
             return None
         # Get the public URL for the image
         response = supabase.storage.from_('vehicle-images').get_public_url(filename)
+        if isinstance(response, dict):
+            return response.get('publicURL')
         return response
     except Exception as e:
         logger.error(f"Error getting image URL: {str(e)}")

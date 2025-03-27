@@ -232,6 +232,12 @@ def dealer_register():
     
     return render_template('dealer_register.html', form=form)
 
+# Dealer profile route
+@app.route('/dealer/profile')
+@login_required
+def dealer_profile():
+    return render_template('dealer_profile.html', dealer=current_user)
+
 # Dealer dashboard route
 @app.route('/dealer/dashboard')
 @login_required

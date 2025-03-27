@@ -3,6 +3,8 @@ import uuid
 from werkzeug.utils import secure_filename
 from app import app
 from flask import current_app
+from sqlalchemy import func
+from models import Vehicle, VehicleImage
 
 def allowed_file(filename):
     """Check if the file extension is allowed"""
@@ -41,16 +43,24 @@ def delete_image(filename):
     return False
 
 def get_brands():
-    """Get a list of all unique vehicle brands from the database"""
-    from models import Vehicle
-    brands = Vehicle.query.with_entities(Vehicle.brand).distinct().all()
-    return [brand[0] for brand in brands]
+    """Get unique brands from vehicles"""
+    return db.session.query(Vehicle.brand).distinct().all()
 
 def get_models_for_brand(brand):
-    """Get a list of all unique models for a given brand"""
-    from models import Vehicle
-    models = Vehicle.query.filter_by(brand=brand).with_entities(Vehicle.model).distinct().all()
-    return [model[0] for model in models]
+    """Get models for a specific brand"""
+    return db.session.query(Vehicle.model).filter(Vehicle.brand == brand).distinct().all()
+
+def get_vehicle_stats():
+    """Get vehicle statistics"""
+    total_vehicles = Vehicle.query.count()
+    active_vehicles = Vehicle.query.filter_by(is_sold=False).count()
+    sold_vehicles = Vehicle.query.filter_by(is_sold=True).count()
+    
+    return {
+        'total': total_vehicles,
+        'active': active_vehicles,
+        'sold': sold_vehicles
+    }
 
 def format_price_for_display(price):
     """Format price in USD for display"""

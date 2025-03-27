@@ -1,14 +1,15 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from app import app, db
+from app import app, db, supabase
 from models import Dealer, Vehicle, VehicleImage, FuelType, VehicleType
 from forms import DealerLoginForm, DealerRegistrationForm, VehicleForm, SearchForm
-from utils import save_image, delete_image, get_brands, get_models_for_brand
+from utils import get_brands, get_models_for_brand
 import os
 from sqlalchemy import or_, and_
 from sqlalchemy.exc import OperationalError
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,36 @@ def handle_db_error(e):
     logger.error(f"Database error: {str(e)}")
     flash('We are experiencing technical difficulties. Please try again later.', 'error')
     return None
+
+def save_image_to_supabase(file, folder='vehicle-images'):
+    """Save an image to Supabase Storage"""
+    try:
+        if not file or not supabase:
+            return None
+            
+        # Generate a unique filename
+        filename = f"{uuid.uuid4()}.{file.filename.rsplit('.', 1)[1].lower()}"
+        
+        # Upload to Supabase Storage
+        supabase.storage.from_(folder).upload(filename, file)
+        
+        return filename
+    except Exception as e:
+        logger.error(f"Error saving image to Supabase: {str(e)}")
+        return None
+
+def delete_image_from_supabase(filename, folder='vehicle-images'):
+    """Delete an image from Supabase Storage"""
+    try:
+        if not filename or not supabase:
+            return False
+            
+        # Delete from Supabase Storage
+        supabase.storage.from_(folder).remove([filename])
+        return True
+    except Exception as e:
+        logger.error(f"Error deleting image from Supabase: {str(e)}")
+        return False
 
 # Home page route
 @app.route('/')
@@ -247,7 +278,7 @@ def add_vehicle():
         # Save vehicle images
         if form.images.data:
             for i, image_file in enumerate(form.images.data):
-                filename = save_image(image_file)
+                filename = save_image_to_supabase(image_file)
                 if filename:
                     vehicle_image = VehicleImage(
                         filename=filename,
@@ -297,7 +328,7 @@ def edit_vehicle(vehicle_id):
         if form.images.data and any(img.filename for img in form.images.data):
             for i, image_file in enumerate(form.images.data):
                 if image_file.filename:
-                    filename = save_image(image_file)
+                    filename = save_image_to_supabase(image_file)
                     if filename:
                         # If no images yet, set as primary
                         is_primary = (i == 0 and not vehicle.images)
@@ -328,7 +359,7 @@ def delete_vehicle(vehicle_id):
     
     # Delete all associated images
     for image in vehicle.images:
-        delete_image(image.filename)
+        delete_image_from_supabase(image.filename)
     
     # Delete the vehicle (cascade will delete images from database)
     db.session.delete(vehicle)
@@ -353,7 +384,7 @@ def delete_image_route(image_id):
     filename = image.filename
     
     # Delete the image file and database record
-    delete_image(filename)
+    delete_image_from_supabase(filename)
     db.session.delete(image)
     
     # If this was the primary image, set another image as primary if available

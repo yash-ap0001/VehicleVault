@@ -195,7 +195,7 @@
                         <div class="image-preview-container">
                             {% for image in vehicle.images %}
                             <div class="image-preview existing-image">
-                                <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" alt="Vehicle Image">
+                                <img src="{{ get_image_url(image.filename) }}" alt="Vehicle Image">
                                 <form action="{{ url_for('delete_image_route', image_id=image.id) }}" method="post" class="delete-image-form">
                                     <button type="button" class="btn btn-sm btn-danger delete-image-btn" data-image-id="{{ image.id }}" title="Delete Image">
                                         <i class="fas fa-trash"></i>

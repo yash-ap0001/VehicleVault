@@ -18,7 +18,7 @@
             <!-- Main Image -->
             <div class="vehicle-detail-image mb-3">
                 {% if vehicle.primary_image %}
-                <img id="main-vehicle-image" src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
+                <img id="main-vehicle-image" src="{{ get_image_url(vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}">
                 {% else %}
                 <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100">
                     <i class="fas fa-{% if vehicle.type.name == 'BIKE' %}motorcycle{% else %}car{% endif %} fa-5x text-muted"></i>
@@ -30,8 +30,8 @@
             {% if vehicle.images and vehicle.images|length > 1 %}
             <div class="vehicle-thumbnails d-flex mb-4 gap-2 overflow-auto">
                 {% for image in vehicle.images %}
-                <div class="vehicle-thumbnail {% if loop.first %}active{% endif %}" data-src="{{ url_for('static', filename='uploads/' + image.filename) }}">
-                    <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }} - Image {{ loop.index }}">
+                <div class="vehicle-thumbnail {% if loop.first %}active{% endif %}" data-src="{{ get_image_url(image.filename) }}">
+                    <img src="{{ get_image_url(image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }} - Image {{ loop.index }}">
                 </div>
                 {% endfor %}
             </div>
@@ -166,7 +166,7 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3" style="width: 80px; height: 60px;">
                                     {% if similar.primary_image %}
-                                    <img src="{{ url_for('static', filename='uploads/' + similar.primary_image.filename) }}" alt="{{ similar.brand }} {{ similar.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <img src="{{ get_image_url(similar.primary_image.filename) }}" alt="{{ similar.brand }} {{ similar.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                     <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100 bg-light">
                                         <i class="fas fa-car text-muted"></i>

@@ -47,7 +47,8 @@ if database_url:
         "pool_recycle": 300,
         "pool_pre_ping": True,
         "connect_args": {
-            "connect_timeout": 10  # Add connection timeout
+            "connect_timeout": 10,  # Add connection timeout
+            "sslmode": "require"    # Enable SSL for Supabase
         }
     }
     

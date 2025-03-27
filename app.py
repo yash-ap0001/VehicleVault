@@ -27,10 +27,17 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 database_url = os.environ.get("DATABASE_URL", "sqlite:///vehicles.db")
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+    logger.info(f"Using PostgreSQL database: {database_url}")
+else:
+    logger.info("Using SQLite database")
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "connect_args": {
+        "sslmode": "require"  # Enable SSL for Supabase
+    }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -62,6 +69,7 @@ with app.app_context():
         import routes  # noqa: F401
         
         # Create database tables
+        logger.info("Attempting to create database tables...")
         db.create_all()
         logger.info("Database tables created successfully")
         
@@ -81,4 +89,5 @@ with app.app_context():
             logger.info("Created test dealer account")
     except Exception as e:
         logger.error(f"Error during app initialization: {str(e)}")
-        raise
+        # Don't raise the exception, just log it
+        # This allows the app to start even if database initialization fails

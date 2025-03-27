@@ -18,6 +18,7 @@
         background-color: #fff;
         border-radius: 4px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
     }
     
     .dashboard-stats .col-md-4:nth-child(2) .stat-card {
@@ -28,14 +29,27 @@
         border-left-color: #28a745;
     }
     
+    .card-body {
+        padding: 1.25rem;
+    }
+    
     .stat-value {
         font-size: 2rem;
         font-weight: 700;
         color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
     }
     
     .chart-container {
+        width: 100%;
         height: 250px;
+        position: relative;
+        margin: 0 auto;
     }
     
     .action-btns .btn {
@@ -60,32 +74,47 @@
     </div>
     
     <!-- Dashboard Stats -->
-    <div class="dashboard-stats">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Total Vehicles</h5>
-                        <div class="stat-value">{{ total_vehicles }}</div>
-                        <div class="stat-label">Vehicles in inventory</div>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-muted mb-2">Total Vehicles</h5>
+                    <div class="stat-value">{{ total_vehicles }}</div>
+                    <div class="stat-label text-muted">Vehicles in inventory</div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Active Listings</h5>
-                        <div class="stat-value">{{ active_listings }}</div>
-                        <div class="stat-label">Available for sale</div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-muted mb-2">Active Listings</h5>
+                    <div class="stat-value">{{ active_listings }}</div>
+                    <div class="stat-label text-muted">Available for sale</div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: {% if total_vehicles > 0 %}{{ (active_listings / total_vehicles * 100)|round|int }}{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Sold Vehicles</h5>
-                        <div class="stat-value">{{ sold_vehicles }}</div>
-                        <div class="stat-label">Completed sales</div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-muted mb-2">Sold Vehicles</h5>
+                    <div class="stat-value">{{ sold_vehicles }}</div>
+                    <div class="stat-label text-muted">Completed sales</div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-secondary" role="progressbar" 
+                            style="width: {% if total_vehicles > 0 %}{{ (sold_vehicles / total_vehicles * 100)|round|int }}{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
@@ -94,20 +123,40 @@
     
     <!-- Chart and Quick Actions -->
     <div class="row mb-4">
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Inventory Status</h5>
                 </div>
-                <div class="card-body">
-                    <div class="chart-container">
+                <div class="card-body d-flex align-items-center justify-content-center p-4">
+                    <div style="width: 100%; max-width: 300px; margin: 0 auto;">
                         <canvas id="vehicle-stats-chart" data-active="{{ active_listings }}" data-sold="{{ sold_vehicles }}"></canvas>
                     </div>
                 </div>
+                {% if total_vehicles > 0 %}
+                <div class="card-footer bg-white">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="text-primary mb-1">
+                                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background-color: #3498DB;"></span>
+                                Active
+                            </div>
+                            <div class="fw-bold">{{ (active_listings / total_vehicles * 100)|round|int }}%</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-secondary mb-1">
+                                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background-color: #E74C3C;"></span>
+                                Sold
+                            </div>
+                            <div class="fw-bold">{{ (sold_vehicles / total_vehicles * 100)|round|int }}%</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Quick Actions</h5>
                 </div>
@@ -136,21 +185,26 @@
     
     <!-- Vehicle Management -->
     <div class="vehicle-management">
-        <div class="card">
-            <div class="card-header bg-white">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Manage Vehicles</h5>
+                <div class="btn-group">
+                    <a href="{{ url_for('add_vehicle') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add Vehicle
+                    </a>
+                </div>
             </div>
             <div class="card-body p-0">
                 {% if vehicles %}
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead>
+                        <thead class="table-light">
                             <tr>
                                 <th>Vehicle</th>
                                 <th>Type</th>
                                 <th>Price</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,7 +212,7 @@
                             <tr class="vehicle-item {% if vehicle.is_sold %}vehicle-sold{% endif %} {% if vehicle.is_featured %}vehicle-featured{% endif %}">
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="vehicle-img me-3" style="width: 60px; height: 45px;">
+                                        <div class="vehicle-img me-3" style="width: 60px; height: 45px; border-radius: 4px; overflow: hidden;">
                                             {% if vehicle.primary_image %}
                                             <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
@@ -174,7 +228,7 @@
                                     </div>
                                 </td>
                                 <td>{{ vehicle.type.value }}</td>
-                                <td>{{ vehicle.formatted_price }}</td>
+                                <td><span class="fw-medium">{{ vehicle.formatted_price }}</span></td>
                                 <td>
                                     <span class="badge {% if vehicle.is_sold %}bg-secondary{% else %}bg-success{% endif %}">
                                         {% if vehicle.is_sold %}Sold{% else %}Available{% endif %}
@@ -183,7 +237,7 @@
                                     <span class="badge bg-warning text-dark ms-1">Featured</span>
                                     {% endif %}
                                 </td>
-                                <td class="action-btns">
+                                <td class="action-btns text-end">
                                     <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>

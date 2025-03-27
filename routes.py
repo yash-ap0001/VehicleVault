@@ -30,8 +30,8 @@ def search():
     form = SearchForm(request.args)
     
     query = []
-    if not form.is_sold.data:
-        query.append(Vehicle.is_sold == False)
+    # By default, only show vehicles that are not sold
+    query.append(Vehicle.is_sold == False)
     
     if form.query.data:
         search_term = f"%{form.query.data}%"

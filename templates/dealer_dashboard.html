@@ -14,14 +14,24 @@
     
     .dashboard-stats .stat-card {
         border-left: 4px solid var(--accent-color);
+        height: 100%;
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
-    .dashboard-stats .stat-card:nth-child(2) {
+    .dashboard-stats .col-md-4:nth-child(2) .stat-card {
         border-left-color: var(--secondary-color);
     }
     
-    .dashboard-stats .stat-card:nth-child(3) {
+    .dashboard-stats .col-md-4:nth-child(3) .stat-card {
         border-left-color: #28a745;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
     }
     
     .chart-container {

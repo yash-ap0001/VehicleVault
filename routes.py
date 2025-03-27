@@ -28,8 +28,11 @@ def save_image_to_supabase(file, folder='vehicle-images'):
         # Generate a unique filename
         filename = f"{uuid.uuid4()}.{file.filename.rsplit('.', 1)[1].lower()}"
         
+        # Read the file content
+        file_content = file.read()
+        
         # Upload to Supabase Storage
-        supabase.storage.from_(folder).upload(filename, file)
+        supabase.storage.from_(folder).upload(filename, file_content, {"content-type": file.content_type})
         
         return filename
     except Exception as e:

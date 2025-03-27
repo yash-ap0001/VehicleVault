@@ -2,6 +2,7 @@ import os
 import logging
 from urllib.parse import urlparse
 import time
+from sqlalchemy import text
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -28,7 +29,22 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 database_url = os.environ.get("DATABASE_URL", "sqlite:///vehicles.db")
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
-    logger.info(f"Using PostgreSQL database: {database_url}")
+    # Parse the URL to get connection details (without password)
+    parsed_url = urlparse(database_url)
+    logger.info(f"Database Host: {parsed_url.hostname}")
+    logger.info(f"Database Port: {parsed_url.port}")
+    logger.info(f"Database Name: {parsed_url.path[1:]}")
+    logger.info(f"Database User: {parsed_url.username}")
+    
+    # Test database connection
+    try:
+        engine = db.create_engine(database_url)
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT version()"))
+            version = result.scalar()
+            logger.info(f"Successfully connected to PostgreSQL database. Version: {version}")
+    except Exception as e:
+        logger.error(f"Failed to connect to database: {str(e)}")
 else:
     logger.info("Using SQLite database")
 
@@ -72,6 +88,17 @@ def init_db():
         try:
             logger.info(f"Attempting to create database tables (attempt {attempt + 1}/{max_retries})...")
             db.create_all()
+            
+            # Test if tables were created
+            with db.engine.connect() as connection:
+                result = connection.execute(text("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                """))
+                tables = [row[0] for row in result]
+                logger.info(f"Created tables: {tables}")
+            
             logger.info("Database tables created successfully")
             return True
         except Exception as e:

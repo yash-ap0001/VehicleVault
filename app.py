@@ -4,7 +4,7 @@ from urllib.parse import urlparse, urlencode, parse_qs
 import time
 from sqlalchemy import text
 
-from flask import Flask
+from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager
@@ -22,8 +22,16 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 # Create Flask app
-app = Flask(__name__)
+app = Flask(__name__, 
+    static_folder='static',  # Explicitly set static folder
+    static_url_path='/static'  # Explicitly set static URL path
+)
 app.secret_key = os.environ.get("yash_SUPABASE_JWT_SECRET", "dev-secret-key")
+
+# Configure upload folder
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Configure SQLAlchemy
 database_url = os.environ.get("yash_POSTGRES_URL")
@@ -110,28 +118,22 @@ login_manager.login_view = 'dealer_login'
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "warning"
 
+# Import routes after app is created
+from routes import *
+
+# Initialize database
 def init_db():
-    """Initialize database with retries"""
+    """Initialize database tables"""
     max_retries = 3
     retry_delay = 5  # seconds
     
     for attempt in range(max_retries):
         try:
             logger.info(f"Attempting to create database tables (attempt {attempt + 1}/{max_retries})...")
-            db.create_all()
-            
-            # Test if tables were created
-            with db.engine.connect() as connection:
-                result = connection.execute(text("""
-                    SELECT table_name 
-                    FROM information_schema.tables 
-                    WHERE table_schema = 'public'
-                """))
-                tables = [row[0] for row in result]
-                logger.info(f"Created tables: {tables}")
-            
+            with app.app_context():
+                db.create_all()
             logger.info("Database tables created successfully")
-            return True
+            return
         except Exception as e:
             logger.error(f"Error creating database tables (attempt {attempt + 1}/{max_retries}): {str(e)}")
             if attempt < max_retries - 1:
@@ -139,37 +141,41 @@ def init_db():
                 time.sleep(retry_delay)
             else:
                 logger.error("Failed to create database tables after all retries")
-                return False
+                raise
 
-# Register models and routes within app context
+# Create upload directory
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+logger.info(f"Created upload directory: {app.config['UPLOAD_FOLDER']}")
+
+# Initialize database tables
+init_db()
+
+# Create test dealer if none exists
 with app.app_context():
-    try:
-        # Import models and routes here to avoid circular imports
-        from models import Dealer, Vehicle, VehicleImage  # noqa: F401
-        import routes  # noqa: F401
-        
-        # Initialize database with retries
-        if init_db():
-            # Add test dealer if none exists
-            try:
-                if not Dealer.query.first():
-                    from werkzeug.security import generate_password_hash
-                    test_dealer = Dealer(
-                        username="testdealer",
-                        email="test@example.com",
-                        password_hash=generate_password_hash("password"),
-                        business_name="Test Dealership",
-                        address="123 Demo Street",
-                        phone="555-123-4567"
-                    )
-                    db.session.add(test_dealer)
-                    db.session.commit()
-                    logger.info("Created test dealer account")
-            except Exception as e:
-                logger.error(f"Error creating test dealer: {str(e)}")
-        else:
-            logger.error("Skipping test dealer creation due to database initialization failure")
-    except Exception as e:
-        logger.error(f"Error during app initialization: {str(e)}")
-        # Don't raise the exception, just log it
-        # This allows the app to start even if database initialization fails
+    if not Dealer.query.first():
+        from werkzeug.security import generate_password_hash
+        test_dealer = Dealer(
+            username="testdealer",
+            email="test@example.com",
+            password_hash=generate_password_hash("password"),
+            business_name="Test Dealership",
+            address="123 Demo Street",
+            phone="555-123-4567"
+        )
+        db.session.add(test_dealer)
+        db.session.commit()
+        logger.info("Created test dealer account")
+
+# Add context processor for static files
+@app.context_processor
+def override_url_for():
+    return dict(url_for=dated_url_for)
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                   endpoint, filename)
+            values['v'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)

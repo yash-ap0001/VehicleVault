@@ -517,3 +517,38 @@ footer {
     font-size: 1.25rem;
   }
 }
+
+/* Test CSS file */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+}
+
+.navbar {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand span:first-child {
+    color: #007bff;
+    font-weight: 700;
+}
+
+.navbar-brand span:last-child {
+    color: #343a40;
+    font-weight: 700;
+}
+
+.nav-link {
+    color: #343a40 !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.nav-link:hover {
+    color: #007bff !important;
+}
+
+.nav-link.active {
+    color: #007bff !important;
+}

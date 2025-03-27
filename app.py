@@ -30,6 +30,10 @@ database_url = os.environ.get("yash_POSTGRES_URL")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
 if database_url:
+    # Convert postgres:// to postgresql:// if needed
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
     # Parse the URL to get connection details (without password)
     parsed_url = urlparse(database_url)
     logger.info(f"Database Host: {parsed_url.hostname}")

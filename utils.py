@@ -1,7 +1,7 @@
 import os
 import uuid
 from werkzeug.utils import secure_filename
-from app import app
+from app import app, db
 from flask import current_app
 from sqlalchemy import func
 from models import Vehicle, VehicleImage

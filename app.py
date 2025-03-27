@@ -23,10 +23,10 @@ db = SQLAlchemy(model_class=Base)
 
 # Create Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+app.secret_key = os.environ.get("yash_SUPABASE_JWT_SECRET", "dev-secret-key")
 
 # Configure SQLAlchemy
-database_url = os.environ.get("DATABASE_URL", "postgres://postgres.vnighnwmvosrbkfdhrjz:1YWlI5VkaUGMl1DK@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x")
+database_url = os.environ.get("yash_POSTGRES_URL")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
 if database_url:
@@ -67,7 +67,7 @@ if database_url:
     except Exception as e:
         logger.error(f"Failed to connect to database: {str(e)}")
 else:
-    logger.warning("No DATABASE_URL found. Using SQLite.")
+    logger.warning("No yash_POSTGRES_URL found. Using SQLite.")
     database_url = "sqlite:///vehicles.db"
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}

@@ -29,14 +29,27 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 database_url = os.environ.get("DATABASE_URL")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+if database_url:
+    # Convert postgres:// to postgresql:// if needed
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
     # Parse the URL to get connection details (without password)
     parsed_url = urlparse(database_url)
     logger.info(f"Database Host: {parsed_url.hostname}")
     logger.info(f"Database Port: {parsed_url.port}")
     logger.info(f"Database Name: {parsed_url.path[1:]}")
     logger.info(f"Database User: {parsed_url.username}")
+    
+    # Configure SQLAlchemy with the database URL
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+        "connect_args": {
+            "connect_timeout": 10  # Add connection timeout
+        }
+    }
     
     # Test database connection
     try:
@@ -48,18 +61,11 @@ if database_url and database_url.startswith("postgres://"):
     except Exception as e:
         logger.error(f"Failed to connect to database: {str(e)}")
 else:
-    logger.warning("No DATABASE_URL found or not a PostgreSQL URL. Using SQLite.")
+    logger.warning("No DATABASE_URL found. Using SQLite.")
     database_url = "sqlite:///vehicles.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-    "connect_args": {
-        "sslmode": "require",  # Enable SSL for Supabase
-        "connect_timeout": 10  # Add connection timeout
-    }
-}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure file uploads

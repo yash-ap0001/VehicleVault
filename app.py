@@ -30,9 +30,9 @@ database_url = os.environ.get("DATABASE_URL")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
 if database_url:
-    # Convert postgres:// to postgresql:// if needed
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    # Ensure we're using the connection pooler
+    if not database_url.endswith("?pgbouncer=true"):
+        database_url += "?pgbouncer=true"
     
     # Parse the URL to get connection details (without password)
     parsed_url = urlparse(database_url)
@@ -59,6 +59,15 @@ if database_url:
             result = connection.execute(text("SELECT version()"))
             version = result.scalar()
             logger.info(f"Successfully connected to PostgreSQL database. Version: {version}")
+            
+            # Test if we can query tables
+            result = connection.execute(text("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public'
+            """))
+            tables = [row[0] for row in result]
+            logger.info(f"Available tables in database: {tables}")
     except Exception as e:
         logger.error(f"Failed to connect to database: {str(e)}")
 else:

@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlparse, urlencode, parse_qs
 import time
 from sqlalchemy import text
+from supabase import create_client, Client
 
 from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -28,10 +29,40 @@ app = Flask(__name__,
 )
 app.secret_key = os.environ.get("yash_SUPABASE_JWT_SECRET", "dev-secret-key")
 
-# Configure upload folder
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Initialize Supabase client
+supabase_url = os.environ.get("yash_SUPABASE_URL")
+supabase_key = os.environ.get("yash_SUPABASE_ANON_KEY")
+supabase: Client = create_client(supabase_url, supabase_key)
+
+# Configure file uploads
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload
+app.config["ALLOWED_EXTENSIONS"] = {"jpg", "jpeg", "png", "webp"}
+
+def get_image_url(filename):
+    """Get the public URL for an image from Supabase Storage"""
+    try:
+        if not filename:
+            return None
+        # Get the public URL for the image
+        response = supabase.storage.from_('vehicle-images').get_public_url(filename)
+        return response
+    except Exception as e:
+        logger.error(f"Error getting image URL: {str(e)}")
+        return None
+
+# Add context processor for static files and image URLs
+@app.context_processor
+def override_url_for():
+    return dict(url_for=dated_url_for, get_image_url=get_image_url)
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                   endpoint, filename)
+            values['v'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)
 
 # Configure SQLAlchemy
 database_url = os.environ.get("yash_POSTGRES_URL")
@@ -98,11 +129,6 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Configure file uploads
-app.config["UPLOAD_FOLDER"] = "/tmp/uploads"  # Use /tmp for serverless
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload
-app.config["ALLOWED_EXTENSIONS"] = {"jpg", "jpeg", "png", "webp"}
-
 # Ensure upload directory exists
 try:
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -143,10 +169,6 @@ def init_db():
                 logger.error("Failed to create database tables after all retries")
                 raise
 
-# Create upload directory
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-logger.info(f"Created upload directory: {app.config['UPLOAD_FOLDER']}")
-
 # Initialize database tables
 init_db()
 
@@ -165,17 +187,3 @@ with app.app_context():
         db.session.add(test_dealer)
         db.session.commit()
         logger.info("Created test dealer account")
-
-# Add context processor for static files
-@app.context_processor
-def override_url_for():
-    return dict(url_for=dated_url_for)
-
-def dated_url_for(endpoint, **values):
-    if endpoint == 'static':
-        filename = values.get('filename', None)
-        if filename:
-            file_path = os.path.join(app.root_path,
-                                   endpoint, filename)
-            values['v'] = int(os.stat(file_path).st_mtime)
-    return url_for(endpoint, **values)

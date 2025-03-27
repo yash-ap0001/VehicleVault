@@ -65,238 +65,92 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dealer Dashboard</h2>
-        <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i> Add New Vehicle
-        </a>
-    </div>
-    
-    <!-- Dashboard Stats -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-muted mb-2">Total Vehicles</h5>
-                    <div class="stat-value">{{ total_vehicles }}</div>
-                    <div class="stat-label text-muted">Vehicles in inventory</div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-muted mb-2">Active Listings</h5>
-                    <div class="stat-value">{{ active_listings }}</div>
-                    <div class="stat-label text-muted">Available for sale</div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-success" role="progressbar" 
-                            style="width: {% if total_vehicles > 0 %}{{ (active_listings / total_vehicles * 100)|round|int }}{% else %}0{% endif %}%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title text-muted mb-2">Sold Vehicles</h5>
-                    <div class="stat-value">{{ sold_vehicles }}</div>
-                    <div class="stat-label text-muted">Completed sales</div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-secondary" role="progressbar" 
-                            style="width: {% if total_vehicles > 0 %}{{ (sold_vehicles / total_vehicles * 100)|round|int }}{% else %}0{% endif %}%"></div>
-                    </div>
-                </div>
-            </div>
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Dealer Dashboard</h1>
         </div>
     </div>
-    
-    <!-- Chart and Quick Actions -->
+
+    <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Inventory Status</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center p-4">
-                    <div style="width: 100%; max-width: 300px; margin: 0 auto;">
-                        <canvas id="vehicle-stats-chart" data-active="{{ active_listings }}" data-sold="{{ sold_vehicles }}"></canvas>
-                    </div>
-                </div>
-                {% if total_vehicles > 0 %}
-                <div class="card-footer bg-white">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="text-primary mb-1">
-                                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background-color: #3498DB;"></span>
-                                Active
-                            </div>
-                            <div class="fw-bold">{{ (active_listings / total_vehicles * 100)|round|int }}%</div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-secondary mb-1">
-                                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background-color: #E74C3C;"></span>
-                                Sold
-                            </div>
-                            <div class="fw-bold">{{ (sold_vehicles / total_vehicles * 100)|round|int }}%</div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
+        <div class="col-md-4">
+            <div class="card">
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('add_vehicle') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-plus me-2"></i> Add New Vehicle
-                        </a>
-                        <button class="btn btn-outline-primary dashboard-filter-btn active" data-filter="all">
-                            <i class="fas fa-list me-2"></i> View All Vehicles
-                        </button>
-                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="active">
-                            <i class="fas fa-car me-2"></i> View Active Listings
-                        </button>
-                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="sold">
-                            <i class="fas fa-check-circle me-2"></i> View Sold Vehicles
-                        </button>
-                        <button class="btn btn-outline-primary dashboard-filter-btn" data-filter="featured">
-                            <i class="fas fa-star me-2"></i> View Featured Vehicles
-                        </button>
-                    </div>
+                    <h5 class="card-title">Total Vehicles</h5>
+                    <p class="card-text display-4">{{ vehicles|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Active Listings</h5>
+                    <p class="card-text display-4">{{ vehicles|selectattr('status', 'equalto', 'active')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sold Vehicles</h5>
+                    <p class="card-text display-4">{{ vehicles|selectattr('status', 'equalto', 'sold')|list|length }}</p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Vehicle Management -->
-    <div class="vehicle-management">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Manage Vehicles</h5>
-                <div class="btn-group">
-                    <a href="{{ url_for('add_vehicle') }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus me-1"></i> Add Vehicle
-                    </a>
-                </div>
+
+    <!-- Vehicle List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Your Vehicles</h2>
+                <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Vehicle
+                </a>
             </div>
-            <div class="card-body p-0">
-                {% if vehicles %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Vehicle</th>
-                                <th>Type</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for vehicle in vehicles %}
-                            <tr class="vehicle-item {% if vehicle.is_sold %}vehicle-sold{% endif %} {% if vehicle.is_featured %}vehicle-featured{% endif %}">
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="vehicle-img me-3" style="width: 60px; height: 45px; border-radius: 4px; overflow: hidden;">
-                                            {% if vehicle.primary_image %}
-                                            <img src="{{ url_for('static', filename='uploads/' + vehicle.primary_image.filename) }}" alt="{{ vehicle.brand }} {{ vehicle.model }}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
-                                            {% else %}
-                                            <div class="no-image-placeholder d-flex align-items-center justify-content-center h-100 bg-light">
-                                                <i class="fas fa-car text-muted"></i>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                        <div>
-                                            <strong>{{ vehicle.brand }} {{ vehicle.model }}</strong>
-                                            <div class="small text-muted">{{ vehicle.year }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{{ vehicle.type.value }}</td>
-                                <td><span class="fw-medium">{{ vehicle.formatted_price }}</span></td>
-                                <td>
-                                    <span class="badge {% if vehicle.is_sold %}bg-secondary{% else %}bg-success{% endif %}">
-                                        {% if vehicle.is_sold %}Sold{% else %}Available{% endif %}
-                                    </span>
-                                    {% if vehicle.is_featured %}
-                                    <span class="badge bg-warning text-dark ms-1">Featured</span>
-                                    {% endif %}
-                                </td>
-                                <td class="action-btns text-end">
-                                    <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-primary" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger delete-vehicle-btn" 
-                                            data-vehicle-id="{{ vehicle.id }}" 
-                                            data-vehicle-name="{{ vehicle.brand }} {{ vehicle.model }}" 
-                                            title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+
+            <div class="row">
+                {% for vehicle in vehicles %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="position-relative">
+                            <img src="{{ get_image_url(vehicle.primary_image.filename) }}" 
+                                 alt="{{ vehicle.brand }} {{ vehicle.model }}" 
+                                 class="card-img-top" 
+                                 style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge {% if vehicle.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ vehicle.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                            <p class="card-text">
+                                <strong>Year:</strong> {{ vehicle.year }}<br>
+                                <strong>Price:</strong> ₹{{ "{:,.2f}".format(vehicle.price) }}<br>
+                                <strong>Mileage:</strong> {{ vehicle.mileage }} km
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {% else %}
-                <div class="alert alert-info m-3">
-                    <i class="fas fa-info-circle me-2"></i> You haven't added any vehicles yet. 
-                    <a href="{{ url_for('add_vehicle') }}">Add your first vehicle</a> to get started.
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No vehicles found. Add your first vehicle to get started!
+                    </div>
                 </div>
-                {% endif %}
+                {% endfor %}
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <span id="vehicleToDelete" class="fw-bold"></span>? This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteVehicleForm" method="post" action="">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Toast for status updates -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="statusToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <strong class="me-auto">Status Update</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-            Vehicle status updated successfully
         </div>
     </div>
 </div>

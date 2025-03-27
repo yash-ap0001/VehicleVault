@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
 # Configure SQLAlchemy
-database_url = os.environ.get("DATABASE_URL")
+database_url = os.environ.get("DATABASE_URL", "postgres://postgres.vnighnwmvosrbkfdhrjz:1YWlI5VkaUGMl1DK@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x")
 logger.info(f"Raw DATABASE_URL: {database_url}")  # Log the raw URL (without password)
 
 if database_url:
@@ -36,14 +36,6 @@ if database_url:
     logger.info(f"Database Port: {parsed_url.port}")
     logger.info(f"Database Name: {parsed_url.path[1:]}")
     logger.info(f"Database User: {parsed_url.username}")
-    
-    # Add pgbouncer parameter properly
-    query_params = {"pgbouncer": "true"}
-    if parsed_url.query:
-        query_params.update(dict(pair.split('=') for pair in parsed_url.query.split('&')))
-    
-    # Reconstruct the URL with pgbouncer
-    database_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{urlencode(query_params)}"
     
     # Configure SQLAlchemy with the database URL
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url

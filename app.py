@@ -32,7 +32,16 @@ app.secret_key = os.environ.get("yash_SUPABASE_JWT_SECRET", "dev-secret-key")
 # Initialize Supabase client
 supabase_url = os.environ.get("yash_SUPABASE_URL")
 supabase_key = os.environ.get("yash_SUPABASE_ANON_KEY")
-supabase: Client = create_client(supabase_url, supabase_key)
+if supabase_url and supabase_key:
+    try:
+        supabase: Client = create_client(supabase_url, supabase_key)
+        logger.info("Successfully initialized Supabase client")
+    except Exception as e:
+        logger.error(f"Error initializing Supabase client: {str(e)}")
+        supabase = None
+else:
+    logger.warning("Supabase credentials not found")
+    supabase = None
 
 # Configure file uploads
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload
@@ -41,7 +50,7 @@ app.config["ALLOWED_EXTENSIONS"] = {"jpg", "jpeg", "png", "webp"}
 def get_image_url(filename):
     """Get the public URL for an image from Supabase Storage"""
     try:
-        if not filename:
+        if not filename or not supabase:
             return None
         # Get the public URL for the image
         response = supabase.storage.from_('vehicle-images').get_public_url(filename)
